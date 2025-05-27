@@ -3,11 +3,11 @@ import { database } from "./appwrite";
 // Preforms our CRUD operations
 const databaseService = {
   // List Documents
-  async listDocuments(dbId, colId) {
+  async listDocuments(dbId, colId, queries = []) {
     try {
-      const response = await database.listDocuments(dbId, colId);
+      const response = await database.listDocuments(dbId, colId, queries);
 
-      return response.documents || [];
+      return { data: response.documents || [], error: null };
     } catch (error) {
       console.error("Error Fetching Documents: ", error.message);
 
@@ -27,7 +27,7 @@ const databaseService = {
       };
     }
   },
-  
+
   // Update Document
   async updateDocument(dbId, colId, id, data) {
     try {
