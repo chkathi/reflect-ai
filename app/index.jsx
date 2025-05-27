@@ -1,9 +1,34 @@
 import JournalImage from "@/assets/images/journal.png";
+import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "expo-router";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useEffect } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function HomeScreen() {
+  const { user, loading } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      // done loading and user is logged in
+      router.replace("/notes");
+    }
+  }, [user, loading]);
+
+  if (loading) {
+    return (
+      <View style={styles.centeredContainer}>
+        <ActivityIndicator size="large" color="#007vff" />
+      </View>
+    );
+  }
   return (
     // View is like a container for all our components
     <View style={styles.container}>
@@ -63,5 +88,10 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  centeredContainter: {
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
   },
 });
