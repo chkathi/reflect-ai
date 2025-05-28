@@ -1,7 +1,14 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import AddNoteModal from "@/components/AddNoteModal";
 import NoteList from "@/components/NoteList";
@@ -34,7 +41,7 @@ export default function NotesScreen() {
   const fetchNotes = async () => {
     setLoading(true);
 
-    const response = await notesService.getNotes();
+    const response = await notesService.getNotes(user.$id);
 
     console.log("Fetched notes response:", response);
 
@@ -54,7 +61,7 @@ export default function NotesScreen() {
 
     if (newNote.trim() === "") return;
 
-    const response = await notesService.addNote(newNote);
+    const response = await notesService.addNote(user.$id, newNote);
 
     if (response.error) {
       Alert.alert("Error: ", response.error);
@@ -110,8 +117,20 @@ export default function NotesScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Note List Component */}
-      <NoteList notes={notes} onDelete={deleteNote} onEdit={editNote} />
+      {loading ? (
+        <ActivityIndicator size="large" color="#007bff" />
+      ) : (
+        <>
+          {error && <Text style={styles.errorText}>{error}</Text>}
+
+          {notes.length === 0 ? (
+            <Text style={styles.noNotesText}>You have no notes</Text>
+          ) : (
+            /* Note List Component */
+            <NoteList notes={notes} onDelete={deleteNote} onEdit={editNote} />
+          )}
+        </>
+      )}
 
       <TouchableOpacity
         style={styles.addButton}

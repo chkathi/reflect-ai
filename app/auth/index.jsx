@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -7,7 +8,7 @@ import {
   View,
 } from "react-native";
 
-import { useAuth } from "@/contexts/AuthContexts";
+import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "expo-router";
 
 export default function AuthScreen() {
@@ -24,6 +25,26 @@ export default function AuthScreen() {
       setError("Email and Password are required");
       return;
     }
+
+    if (isRegistering && password != confirmPassword) {
+      setError("Password do not match");
+      return;
+    }
+
+    let response;
+
+    if (isRegistering) {
+      response = await register(email, password);
+    } else {
+      response = await login(email, password);
+    }
+
+    if (response?.error) {
+      Alert.alert("Error", response.error);
+      return;
+    }
+
+    router.replace("/notes");
   };
 
   return (
@@ -48,7 +69,8 @@ export default function AuthScreen() {
         placeholderTextColor="#aaa"
         value={password}
         onChangeText={setPassword}
-        secureTextEntry
+        secureTextEntry // hides the password
+        textContentType="none"
       />
 
       {isRegistering ? (
@@ -58,11 +80,12 @@ export default function AuthScreen() {
           placeholderTextColor="#aaa"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
-          secureTextEntry
+          secureTextEntry // hides the password
+          textContentType="none"
         />
       ) : null}
 
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={handleAuth}>
         <Text style={styles.buttonText}>
           {isRegistering ? "Sign Up" : "Login"}
         </Text>
