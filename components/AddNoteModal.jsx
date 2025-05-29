@@ -1,5 +1,8 @@
 import {
+  KeyboardAvoidingView,
   Modal,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -10,12 +13,12 @@ import {
 export default function AddNoteModal({
   modalVisible,
   setModalVisible,
-  newNote,
-  setNewNote,
+  newNoteText,
+  setNewNoteText,
+  newNoteSummary,
+  setNewNoteSummary,
   addNote,
 }) {
-  /* Modal  */
-
   return (
     <Modal
       visible={modalVisible}
@@ -23,31 +26,54 @@ export default function AddNoteModal({
       transparent
       onRequestClose={() => setModalVisible(false)}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Add a new note</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Start writing your thoughts..."
-            multiline={true}
-            textAlignVertical="top"
-            placeholderTextColor="#aaa"
-            value={newNote}
-            onChangeText={setNewNote}
-          />
-          <View style={styles.modalButtons}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.saveButton} onPress={addNote}>
-              <Text style={styles.saveButtonText}>SaveNotes</Text>
-            </TouchableOpacity>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+        // keyboardVerticalOffset={60} // adjust based on your header height
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={[styles.modalOverlay, { flex: 1 }]}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Add a new note</Text>
+
+              <TextInput
+                style={styles.input}
+                placeholder="Title or Quick Summary"
+                multiline
+                textAlignVertical="top"
+                placeholderTextColor="#aaa"
+                value={newNoteSummary}
+                onChangeText={setNewNoteSummary}
+              />
+
+              <TextInput
+                style={[styles.input, { minHeight: 100 }]}
+                placeholder="Start writing your thoughts..."
+                multiline
+                textAlignVertical="top"
+                placeholderTextColor="#aaa"
+                value={newNoteText}
+                onChangeText={setNewNoteText}
+              />
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => setModalVisible(false)}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.saveButton} onPress={addNote}>
+                  <Text style={styles.saveButtonText}>Save Notes</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -62,6 +88,7 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: "#fff",
     padding: 20,
+    marginTop: 50,
     borderRadius: 10,
     width: "80%",
   },

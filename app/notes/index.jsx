@@ -1,4 +1,7 @@
+import AddNoteModal from "@/components/AddNoteModal";
+import NoteList from "@/components/NoteList";
 import { useAuth } from "@/contexts/AuthContext";
+import noteService from "@/services/notesService";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -10,109 +13,49 @@ import {
   View,
 } from "react-native";
 
-import AddNoteModal from "@/components/AddNoteModal";
-import NoteList from "@/components/NoteList";
+import { useNote } from "@/contexts/NoteContext";
 
-import notesService from "@/services/notesService";
-
-export default function NotesScreen() {
-  const router = useRouter();
+const NoteScreen = () => {
+  const { notes, setNotes, fetchNotes, editNote, deleteNote } = useNote();
   const { user, loading: authLoading } = useAuth();
-
-  const [notes, setNotes] = useState([]);
+  const router = useRouter();
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [newNote, setNewNote] = useState("");
+  const [newNoteText, setNewNoteText] = useState("");
+  const [newNoteSummary, setNewNoteSummary] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!authLoading && user === null) {
+    if (!authLoading && !user) {
       router.replace("/auth");
     }
   }, [user, authLoading]);
 
   useEffect(() => {
     if (user) {
-      fetchNotes();
+      fetchNotes(user.$id, setLoading);
     }
-  }, []);
-
-  const fetchNotes = async () => {
-    setLoading(true);
-
-    const response = await notesService.getNotes(user.$id);
-
-    console.log("Fetched notes response:", response);
-
-    if (response.error) {
-      setError(response.error);
-      Alert.alert("Error");
-    } else {
-      setNotes(response.data);
-      setError(null);
-    }
-
-    setLoading(false);
-  };
+  }, [user]);
 
   const addNote = async () => {
-    console.log("Add Note: Log");
+    if (newNoteText.trim() === "") return;
 
-    if (newNote.trim() === "") return;
-
-    const response = await notesService.addNote(user.$id, newNote);
+    const response = await noteService.addNote(
+      user.$id,
+      newNoteText,
+      newNoteSummary
+    );
 
     if (response.error) {
-      Alert.alert("Error: ", response.error);
+      Alert.alert("Error", response.error);
     } else {
       setNotes([...notes, response.data]);
     }
 
-    setNewNote("");
+    setNewNoteText("");
+    setNewNoteSummary("");
     setModalVisible(false);
-  };
-
-  const deleteNote = async (id) => {
-    Alert.alert("Delete Note", "Are you sure you want to delete this note?", [
-      {
-        text: "cancel",
-        style: "cancel",
-      },
-      {
-        text: "Delete",
-        style: "destructive", // Red color for the button
-        onPress: async () => {
-          const response = await notesService.deleteNote(id);
-
-          if (response.error) {
-            Alert.alert("Error: ", response.error);
-          } else {
-            // Update notes on screen (keep notes that dont match the id)
-            setNotes(notes.filter((note) => note.$id != id));
-          }
-        },
-      },
-    ]);
-  };
-
-  const editNote = async (id, updatedText) => {
-    if (!updatedText.trim()) {
-      Alert.alert("Error", "Note text cannot be empty.");
-      return;
-    }
-    const response = await notesService.updateNote(id, updatedText);
-
-    if (response.error) {
-      Alert.alert("Error: ", response.error);
-    } else {
-      // Update notes on screen
-      setNotes((prevNotes) => {
-        prevNotes.map((note) =>
-          note.$id == id ? { ...note, text: updatedText } : note
-        );
-      });
-    }
   };
 
   return (
@@ -126,7 +69,6 @@ export default function NotesScreen() {
           {notes.length === 0 ? (
             <Text style={styles.noNotesText}>You have no notes</Text>
           ) : (
-            /* Note List Component */
             <NoteList notes={notes} onDelete={deleteNote} onEdit={editNote} />
           )}
         </>
@@ -134,24 +76,22 @@ export default function NotesScreen() {
 
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => {
-          setModalVisible(true);
-        }}
+        onPress={() => setModalVisible(true)}
       >
-        <Text style={styles.addButtonText}> + Add Notes </Text>
+        <Text style={styles.addButtonText}>+ Add Note</Text>
       </TouchableOpacity>
 
-      {/* Modal Component */}
       <AddNoteModal
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
-        newNote={newNote}
-        setNewNote={setNewNote}
+        newNoteText={newNoteText}
+        setNewNoteText={setNewNoteText}
+        setNewNoteSummary={setNewNoteSummary}
         addNote={addNote}
       />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -174,4 +114,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
+  errorText: {
+    color: "red",
+    textAlign: "center",
+    marginBottom: 10,
+    fontSize: 16,
+  },
+  noNotesText: {
+    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#555",
+    marginTop: 15,
+  },
 });
+
+export default NoteScreen;

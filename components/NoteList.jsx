@@ -8,7 +8,11 @@ export default function NoteList({ notes, onDelete, onEdit }) {
         data={notes}
         keyExtractor={(item) => item.$id}
         renderItem={({ item }) => (
-          <NoteItem note={item} onDelete={onDelete} onEdit={onEdit} />
+          <NoteItem
+            note={item}
+            onDelete={onDelete}
+            onEdit={onEdit}
+          />
         )}
       />
     </View>

@@ -1,59 +1,27 @@
-import { useRef, useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function NoteItem({ note, onDelete, onEdit }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedText, setEditedText] = useState(note.text);
-  const inputRef = useRef(null);
+import { useNote } from "@/contexts/NoteContext";
 
-  const handleSave = () => {
-    if (editedText.trim() === "") return;
+export default function NoteItem({ note }) {
+  const { navigateToNote, setSelectedNote } = useNote();
 
-    onEdit(note.$id, editedText);
-    setIsEditing(false);
+  const handleNavigation = () => {
+    if (!note) {
+      console.error("No note provided for navigation");
+      return;
+    }
+
+    console.log("Navigating with note:", note); // Debugging the note object
+    setSelectedNote(note); // Update the context state
+    navigateToNote(note); // Navigate using the note directly
   };
 
   return (
-    <View style={styles.noteItem}>
-      {isEditing ? (
-        <TextInput
-          ref={inputRef}
-          style={styles.input}
-          value={editedText}
-          onChangeText={setEditedText}
-          autoFocus
-          onSubmitEditing={handleSave}
-          returnKeyType="done"
-        />
-      ) : (
-        <Text style={styles.noteText}>{note.text}</Text>
-      )}
-      <View style={styles.actions}>
-        {isEditing ? (
-          <TouchableOpacity
-            onPress={() => {
-              handleSave();
-              inputRef.current?.blur();
-            }}
-          >
-            <Text style={styles.edit}>💾</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity onPress={() => setIsEditing(true)}>
-            <Text style={styles.edit}>✏️</Text>
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity onPress={() => onDelete(note.$id)}>
-          <Text style={styles.delete}>❌</Text>
-        </TouchableOpacity>
+    <TouchableOpacity onPress={handleNavigation}>
+      <View style={styles.noteItem}>
+        <Text style={styles.noteSummary}>{note.summary}</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -66,7 +34,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginVertical: 5,
   },
-  noteText: {
+  noteSummary: {
     fontSize: 18,
   },
   delete: {

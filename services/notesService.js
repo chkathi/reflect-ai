@@ -24,7 +24,6 @@ const notesService = {
 
       return response;
     } catch (error) {
-      
       console.log("Error fetching notes:", error.message);
 
       return { data: [], error: error.message };
@@ -32,7 +31,7 @@ const notesService = {
   },
 
   // Add New Note
-  async addNote(user_id, text) {
+  async addNote(user_id, text, summary) {
     if (!text) {
       return { error: "Note text cannot be empty." };
     }
@@ -40,7 +39,7 @@ const notesService = {
     const data = {
       text: text,
       createdAt: new Date().toISOString(),
-      user_id,
+      summary,
       user_id,
     };
 
