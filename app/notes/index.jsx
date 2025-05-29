@@ -60,6 +60,21 @@ const NoteScreen = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.actions}>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => setModalVisible(true)}
+        >
+          <Text style={styles.addButtonText}>+ Add Note</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.exportButton}
+          onPress={() => console.log("Requested Date Picker!")}
+        >
+          <Text style={styles.addButtonText}>Export Notes</Text>
+        </TouchableOpacity>
+      </View>
+
       {loading ? (
         <ActivityIndicator size="large" color="#007bff" />
       ) : (
@@ -67,19 +82,12 @@ const NoteScreen = () => {
           {error && <Text style={styles.errorText}>{error}</Text>}
 
           {notes.length === 0 ? (
-            <Text style={styles.noNotesText}>You have no notes</Text>
+            <Text style={styles.noNotes}>You have no notes</Text>
           ) : (
             <NoteList notes={notes} onDelete={deleteNote} onEdit={editNote} />
           )}
         </>
       )}
-
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => setModalVisible(true)}
-      >
-        <Text style={styles.addButtonText}>+ Add Note</Text>
-      </TouchableOpacity>
 
       <AddNoteModal
         modalVisible={modalVisible}
@@ -100,10 +108,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   addButton: {
-    position: "absolute",
-    bottom: 20,
-    left: 20,
-    right: 20,
     backgroundColor: "#007bff",
     padding: 15,
     borderRadius: 8,
@@ -120,12 +124,37 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontSize: 16,
   },
-  noNotesText: {
+  noNotes: {
     textAlign: "center",
     fontSize: 18,
     fontWeight: "bold",
     color: "#555",
     marginTop: 15,
+  },
+  actions: {
+    flexDirection: "row", // Arrange buttons in a row
+    justifyContent: "space-between", // Space out the buttons
+    padding: 5,
+    marginBottom: 20, // Add margin at the bottom
+    backgroundColor: "#fff", // Optional: Background color for the actions bar
+    borderBottomWidth: 1, // Optional: Add a border at the top
+    borderBottomColor: "#ccc", // Optional: Border color
+  },
+  addButton: {
+    backgroundColor: "#007bff",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+    flex: 1, // Make the button take equal space
+    marginHorizontal: 5, // Add spacing between buttons
+  },
+  exportButton: {
+    backgroundColor: "#28a745",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+    flex: 1, // Make the button take equal space
+    marginHorizontal: 5, // Add spacing between buttons
   },
 });
 

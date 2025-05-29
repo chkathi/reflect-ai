@@ -28,14 +28,26 @@ export const NoteProvider = ({ children }) => {
       return;
     }
 
+    // Optimistically update the selectedNote and notes array
+    const previousNote = selectedNote;
+    setSelectedNote((prevSelectedNote) => ({
+      ...prevSelectedNote,
+      text: newText,
+    }));
+    setNotes((prevNotes) =>
+      prevNotes.map((note) =>
+        note.$id === id ? { ...note, text: newText } : note
+      )
+    );
+
+    // Send the update request to the database
     const response = await noteService.updateNote(id, newText);
     if (response.error) {
+      // Roll back the changes if the request fails
       Alert.alert("Error", response.error);
-    } else {
+      setSelectedNote(previousNote);
       setNotes((prevNotes) =>
-        prevNotes.map((note) =>
-          note.$id === id ? { ...note, text: response.data.text } : note
-        )
+        prevNotes.map((note) => (note.$id === id ? previousNote : note))
       );
     }
   };
