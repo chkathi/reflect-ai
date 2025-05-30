@@ -48,7 +48,7 @@ export default function AddNoteModal({
             />
 
             <TextInput
-              style={[styles.input, { minHeight: 100 }]}
+              style={[styles.input, { minHeight: 200 }]}
               placeholder="Start writing your thoughts..."
               multiline
               textAlignVertical="top"
@@ -89,8 +89,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
-    width: "80%", // Set a width for the modal
+    width: "90%", // Set a width for the modal
     alignSelf: "center", // Center the modal horizontally
+
   },
   modalTitle: {
     fontSize: 20,
