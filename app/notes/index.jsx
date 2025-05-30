@@ -1,4 +1,5 @@
 import AddNoteModal from "@/components/AddNoteModal";
+import ExportModal from "@/components/ExportModal";
 import NoteList from "@/components/NoteList";
 import { useAuth } from "@/contexts/AuthContext";
 import noteService from "@/services/notesService";
@@ -21,6 +22,7 @@ const NoteScreen = () => {
   const router = useRouter();
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [exportModalVisible, setExportModalVisible] = useState(false);
   const [newNoteText, setNewNoteText] = useState("");
   const [newNoteSummary, setNewNoteSummary] = useState("");
   const [loading, setLoading] = useState(true);
@@ -69,7 +71,10 @@ const NoteScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.exportButton}
-          onPress={() => console.log("Requested Date Picker!")}
+          onPress={() => {
+            console.log("Export requested!");
+            setExportModalVisible(true);
+          }}
         >
           <Text style={styles.addButtonText}>Export Notes</Text>
         </TouchableOpacity>
@@ -96,6 +101,10 @@ const NoteScreen = () => {
         setNewNoteText={setNewNoteText}
         setNewNoteSummary={setNewNoteSummary}
         addNote={addNote}
+      />
+      <ExportModal
+        exportModalVisible={exportModalVisible}
+        setExportModalVisible={setExportModalVisible}
       />
     </View>
   );
