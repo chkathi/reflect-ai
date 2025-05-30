@@ -62,15 +62,22 @@ export const NoteProvider = ({ children }) => {
         text: "Delete",
         style: "destructive",
         onPress: async () => {
+          // Optimistically remove the note from the state
+          const previousNotes = notes; // Save the current state for rollback
+          setNotes((prevNotes) => prevNotes.filter((note) => note.$id !== id));
+
+          // If the deleted note is the currently selected note, navigate back to /notes
+          if (selectedNote?.$id === id && router.pathname === "/note-page") {
+            setSelectedNote(null); // Clear the selected note
+            router.push("/notes");
+          }
+
+          // Send the delete request to the database
           const response = await noteService.deleteNote(id);
           if (response.error) {
+            // Roll back the changes if the request fails
             Alert.alert("Error", response.error);
-          } else {
-            setNotes((prevNotes) =>
-              prevNotes.filter((note) => note.$id !== id)
-            );
-
-            router.push("/notes"); // Navigate back to notes list after deletion
+            setNotes(previousNotes); // Restore the previous state
           }
         },
       },
@@ -83,10 +90,15 @@ export const NoteProvider = ({ children }) => {
       return;
     }
 
-    console.log("Setting selectedNote:", note); // Debugging the note being passed
-    setSelectedNote(note); // Set the selected note in context
-    router.push("/note-page"); // Navigate to the note page
+    // Set the selected note in context
+    setSelectedNote(note);
+
+    // Navigate to the note page only if not already on it
+    if (router.pathname !== "/note-page") {
+      router.push("/note-page");
+    }
   };
+
   return (
     <NoteContext.Provider
       value={{

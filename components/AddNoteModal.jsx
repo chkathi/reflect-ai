@@ -60,12 +60,23 @@ export default function AddNoteModal({
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={styles.cancelButton}
-                onPress={() => setModalVisible(false)}
+                onPress={() => {
+                  setModalVisible(false);
+                }}
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => {
+                  setNewNoteText(""); // Clear the note text
+                  setNewNoteSummary(""); // Clear the note summary
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Clear</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.saveButton} onPress={addNote}>
-                <Text style={styles.saveButtonText}>Save Notes</Text>
+                <Text style={styles.saveButtonText}>Add</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -91,7 +102,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: "90%", // Set a width for the modal
     alignSelf: "center", // Center the modal horizontally
-
   },
   modalTitle: {
     fontSize: 20,
