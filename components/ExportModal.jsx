@@ -69,7 +69,7 @@ export default function ExportModal({
             </View>
             <Text style={styles.exportFail}>
               {" "}
-              No notes found within these dates
+              No notes found within these dates.
             </Text>
             <Text style={styles.exportSucess}> Available for download!</Text>
 
