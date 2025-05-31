@@ -10,10 +10,20 @@ import {
   View,
 } from "react-native";
 
+import { useNote } from "@/contexts/NoteContext";
+import { useState } from "react";
+
 export default function ExportModal({
   exportModalVisible,
   setExportModalVisible,
 }) {
+  const [startMonth, setStartMonth] = useState(0);
+  const [startYear, setStartYear] = useState(0);
+  const [endMonth, setEndMonth] = useState(0);
+  const [endYear, setEndYear] = useState(0);
+
+  const { filterNotesFunc, exportError, exportSuccess } = useNote();
+
   return (
     <Modal
       visible={exportModalVisible}
@@ -41,6 +51,8 @@ export default function ExportModal({
                 keyboardType="numeric"
                 placeholderTextColor="#aaa"
                 maxLength={2} // Limit input to 2 digits
+                value={startMonth}
+                onChangeText={setStartMonth}
               />
               <TextInput
                 placeholder="Year"
@@ -48,6 +60,8 @@ export default function ExportModal({
                 placeholderTextColor="#aaa"
                 keyboardType="numeric"
                 maxLength={4} // Limit input to 4 digits
+                value={startYear}
+                onChangeText={setStartYear}
               />
             </View>
             <Text>To: </Text>
@@ -58,6 +72,8 @@ export default function ExportModal({
                 keyboardType="numeric"
                 placeholderTextColor="#aaa"
                 maxLength={2} // Limit input to 2 digits
+                value={endMonth}
+                onChangeText={setEndMonth}
               />
               <TextInput
                 placeholder="Year"
@@ -65,18 +81,28 @@ export default function ExportModal({
                 placeholderTextColor="#aaa"
                 keyboardType="numeric"
                 maxLength={4} // Limit input to 4 digits
+                const
+                value={endYear}
+                onChangeText={setEndYear}
               />
             </View>
-            <Text style={styles.exportFail}>
-              {" "}
-              No notes found within these dates.
-            </Text>
-            <Text style={styles.exportSucess}> Available for download!</Text>
+
+            <View>
+              {/* Display Error or Success Messages */}
+              {exportError !== "" && (
+                <Text style={styles.exportFail}>{exportError}</Text>
+              )}
+              {exportSuccess !== "" && (
+                <Text style={styles.exportSuccess}>{exportSuccess}</Text>
+              )}
+            </View>
 
             {/* Modal Buttons */}
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                onPress={() => console.log("Exporting notes...")}
+                onPress={() => {
+                  filterNotesFunc(startMonth, startYear, endMonth, endYear);
+                }}
               >
                 <Text style={styles.export}>Export</Text>
               </TouchableOpacity>
@@ -147,7 +173,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     fontSize: 16,
   },
-  exportSucess: {
+  exportSuccess: {
     color: "green",
     textAlign: "center",
     marginBottom: 5,

@@ -9,7 +9,10 @@ export const NoteProvider = ({ children }) => {
   const router = useRouter();
 
   const [notes, setNotes] = useState([]);
+  const [filteredNotes, setFilteredNotes] = useState([]);
   const [selectedNote, setSelectedNote] = useState(null);
+  const [exportError, setExportError] = useState("");
+  const [exportSuccess, setExportSuccess] = useState("");
 
   const fetchNotes = async (userId, setLoading) => {
     setLoading(true); // Start loading
@@ -99,6 +102,68 @@ export const NoteProvider = ({ children }) => {
     }
   };
 
+  const filterNotesFunc = (startMonth, startYear, endMonth, endYear) => {
+    if (
+      startMonth === 0 ||
+      startYear === 0 ||
+      endMonth === 0 ||
+      endYear === 0
+    ) {
+      console.log("NotesContext: Missing date fields for filtering");
+      setExportError("Please fill in all fields.");
+      return [];
+    }
+
+    if (
+      startYear > endYear ||
+      (startYear === endYear && startMonth > endMonth)
+    ) {
+      setExportError("Start date cannot be after end date.");
+      setExportSuccess("");
+      console.log("NotesContext: Start date is after end date");
+      return [];
+    }
+
+    if (
+      startYear < 1900 ||
+      endYear < 1900 ||
+      startMonth < 1 ||
+      endMonth < 1 ||
+      startMonth > 12 ||
+      endMonth > 12
+    ) {
+      setExportError("Invalid month or year for filtering.");
+      setExportSuccess("");
+      console.log("NotesContext: Invalid month or year for filtering");
+      return [];
+    }
+
+    const filtered = notes.filter((note) => {
+      const noteDate = new Date(note.createdAt);
+      const startDate = new Date(startYear, startMonth - 1, 1);
+      const endDate = new Date(endYear, endMonth - 1, 0);
+
+      console.log(
+        `NotesContext: Filtering notes from ${startDate} to ${endDate}`
+      );
+
+      return noteDate >= startDate && noteDate <= endDate;
+    });
+
+    if (!filtered || filtered.length === 0) {
+      console.log("NotesContext: No notes found within the specified dates");
+      setExportError("No notes found within these dates.");
+      setExportSuccess("");
+      return [];
+    }
+
+    setFilteredNotes(filtered);
+    setExportError(""); // Clear any previous error
+    setExportSuccess("Notes available for download!");
+    console.log("NotesContext: Filtered notes successfully");
+    console.log("Filtered Notes:", filteredNotes);
+  };
+
   return (
     <NoteContext.Provider
       value={{
@@ -110,6 +175,10 @@ export const NoteProvider = ({ children }) => {
         editNote,
         deleteNote,
         navigateToNote,
+        filterNotesFunc,
+        filteredNotes,
+        exportError,
+        exportSuccess,
       }}
     >
       {children}

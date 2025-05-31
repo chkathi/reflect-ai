@@ -17,7 +17,17 @@ import {
 import { useNote } from "@/contexts/NoteContext";
 
 const NoteScreen = () => {
-  const { notes, setNotes, fetchNotes, editNote, deleteNote } = useNote();
+  const {
+    notes,
+    setNotes,
+    fetchNotes,
+    editNote,
+    deleteNote,
+    exportError,
+    exportSucess,
+    setExportError,
+    setExportSuccess,
+  } = useNote();
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
@@ -72,7 +82,6 @@ const NoteScreen = () => {
         <TouchableOpacity
           style={styles.exportButton}
           onPress={() => {
-            console.log("Export requested!");
             setExportModalVisible(true);
           }}
         >
@@ -105,6 +114,10 @@ const NoteScreen = () => {
       <ExportModal
         exportModalVisible={exportModalVisible}
         setExportModalVisible={setExportModalVisible}
+        setExportSucess={setExportSuccess}
+        setExportError={setExportError}
+        exportError={exportError}
+        exportSucess={exportSucess}
       />
     </View>
   );
