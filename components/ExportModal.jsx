@@ -22,7 +22,14 @@ export default function ExportModal({
   const [endMonth, setEndMonth] = useState(0);
   const [endYear, setEndYear] = useState(0);
 
-  const { filterNotesFunc, exportError, exportSuccess } = useNote();
+  const {
+    filterNotesFunc,
+    exportError,
+    exportSuccess,
+    setExportSuccess,
+    setExportError,
+    handleSync,
+  } = useNote();
 
   return (
     <Modal
@@ -102,11 +109,25 @@ export default function ExportModal({
               <TouchableOpacity
                 onPress={() => {
                   filterNotesFunc(startMonth, startYear, endMonth, endYear);
+                  handleSync(); // Sync notes after filtering
+
                 }}
               >
                 <Text style={styles.export}>Export</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setExportModalVisible(false)}>
+              <TouchableOpacity
+                onPress={() => {
+                  setExportError(""); // Clear any previous error
+                  setExportSuccess(""); // Clear any previous success message
+                  // Reset input fields
+                  setStartMonth(0);
+                  setStartYear(0);
+                  setEndMonth(0);
+                  setEndYear(0);
+                  // Close the modal
+                  setExportModalVisible(false);
+                }}
+              >
                 <Text style={styles.cancel}>Close</Text>
               </TouchableOpacity>
             </View>

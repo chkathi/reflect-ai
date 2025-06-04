@@ -3,6 +3,8 @@ import { useRouter } from "expo-router";
 import { createContext, useContext, useState } from "react";
 import { Alert } from "react-native";
 
+import { syncToAnalysisAPI } from "@/api/syncService"; // your file path
+
 const NoteContext = createContext();
 
 export const NoteProvider = ({ children }) => {
@@ -161,7 +163,16 @@ export const NoteProvider = ({ children }) => {
     setExportError(""); // Clear any previous error
     setExportSuccess("Notes available for download!");
     console.log("NotesContext: Filtered notes successfully");
-    console.log("Filtered Notes:", filteredNotes);
+    console.log("Filtered Notes:", filtered);
+  };
+
+  const handleSync = async () => {
+    try {
+      const response = await syncToAnalysisAPI(filteredNotes);
+      console.log("Sync successful:", response);
+    } catch (err) {
+      Alert.alert("Sync Error", err.message);
+    }
   };
 
   return (
@@ -179,6 +190,9 @@ export const NoteProvider = ({ children }) => {
         filteredNotes,
         exportError,
         exportSuccess,
+        setExportError,
+        setExportSuccess,
+        handleSync,
       }}
     >
       {children}
