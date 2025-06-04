@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
-  centeredContainter: {
+  centeredContainer: {
     alignItems: "center",
     justifyContent: "center",
     textAlign: "center",

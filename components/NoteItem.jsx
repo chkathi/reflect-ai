@@ -1,77 +1,72 @@
-import { useRef, useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function NoteItem({ note, onDelete, onEdit }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedText, setEditedText] = useState(note.text);
-  const inputRef = useRef(null);
+import { useNote } from "@/contexts/NoteContext";
 
-  const handleSave = () => {
-    if (editedText.trim() === "") return;
+export default function NoteItem({ note }) {
+  const { navigateToNote, deleteNote, setSelectedNote } = useNote();
 
-    onEdit(note.$id, editedText);
-    setIsEditing(false);
+  const handleNavigation = () => {
+    if (!note) {
+      console.error("No note provided for navigation");
+      return;
+    }
+
+    console.log("Navigating with note:", note); // Debugging the note object
+    setSelectedNote(note); // Update the context state
+    navigateToNote(note); // Navigate using the note directly
+  };
+
+  // Format the date to show only the day and time
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("en-US", {
+      month: "long", // Full month name (e.g., "May")
+      day: "numeric", // Day of the month (e.g., "29")
+      year: "numeric", // Full year (e.g., "2025")
+      hour: "2-digit", // Hour (e.g., "2")
+      minute: "2-digit", // Minute (e.g., "30")
+      hour12: true, // Use 12-hour format (e.g., "PM")
+    });
   };
 
   return (
-    <View style={styles.noteItem}>
-      {isEditing ? (
-        <TextInput
-          ref={inputRef}
-          style={styles.input}
-          value={editedText}
-          onChangeText={setEditedText}
-          autoFocus
-          onSubmitEditing={handleSave}
-          returnKeyType="done"
-        />
-      ) : (
-        <Text style={styles.noteText}>{note.text}</Text>
-      )}
-      <View style={styles.actions}>
-        {isEditing ? (
-          <TouchableOpacity
-            onPress={() => {
-              handleSave();
-              inputRef.current?.blur();
-            }}
-          >
-            <Text style={styles.edit}>💾</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity onPress={() => setIsEditing(true)}>
-            <Text style={styles.edit}>✏️</Text>
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity onPress={() => onDelete(note.$id)}>
-          <Text style={styles.delete}>❌</Text>
+    <TouchableOpacity onPress={handleNavigation}>
+      <View style={styles.noteItem}>
+        <Text style={styles.noteSummary}>{note.summary}</Text>
+        <Text style={styles.noteDate}>{formatDate(note.createdAt)}</Text>
+        <TouchableOpacity onPress={() => deleteNote(note.$id)}>
+          <Text style={styles.delete}>Delete</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   noteItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flex: 1,
     backgroundColor: "#f5f5f5",
     padding: 15,
     borderRadius: 5,
     marginVertical: 5,
   },
-  noteText: {
+  noteSummary: {
     fontSize: 18,
+    fontWeight: "bold",
+  },
+  noteDate: {
+    fontSize: 12,
+    padding: 5
   },
   delete: {
-    fontSize: 18,
-    color: "red",
+    fontSize: 16,
+    color: "white",
+    fontweight: "bold",
+    backgroundColor: "red",
+    padding: 5,
+    width: "30%",
+    textAlign: "center",
+    borderRadius: 5,
   },
   actions: {
     flexDirection: "row",

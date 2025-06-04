@@ -1,5 +1,8 @@
 import {
+  KeyboardAvoidingView,
   Modal,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -10,12 +13,12 @@ import {
 export default function AddNoteModal({
   modalVisible,
   setModalVisible,
-  newNote,
-  setNewNote,
+  newNoteText,
+  setNewNoteText,
+  newNoteSummary,
+  setNewNoteSummary,
   addNote,
 }) {
-  /* Modal  */
-
   return (
     <Modal
       visible={modalVisible}
@@ -23,31 +26,62 @@ export default function AddNoteModal({
       transparent
       onRequestClose={() => setModalVisible(false)}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Add a new note</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Start writing your thoughts..."
-            multiline={true}
-            textAlignVertical="top"
-            placeholderTextColor="#aaa"
-            value={newNote}
-            onChangeText={setNewNote}
-          />
-          <View style={styles.modalButtons}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.saveButton} onPress={addNote}>
-              <Text style={styles.saveButtonText}>SaveNotes</Text>
-            </TouchableOpacity>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.modalOverlay}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollViewContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add a new note</Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Title or Quick Summary"
+              multiline
+              textAlignVertical="top"
+              placeholderTextColor="#aaa"
+              value={newNoteSummary}
+              onChangeText={setNewNoteSummary}
+            />
+
+            <TextInput
+              style={[styles.input, { minHeight: 200 }]}
+              placeholder="Start writing your thoughts..."
+              multiline
+              textAlignVertical="top"
+              placeholderTextColor="#aaa"
+              value={newNoteText}
+              onChangeText={setNewNoteText}
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => {
+                  setModalVisible(false);
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => {
+                  setNewNoteText(""); // Clear the note text
+                  setNewNoteSummary(""); // Clear the note summary
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Clear</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.saveButton} onPress={addNote}>
+                <Text style={styles.saveButtonText}>Add</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -56,14 +90,18 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // Center the modal vertically
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: "center", // Center the content vertically
   },
   modalContent: {
     backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
-    width: "80%",
+    width: "90%", // Set a width for the modal
+    alignSelf: "center", // Center the modal horizontally
   },
   modalTitle: {
     fontSize: 20,

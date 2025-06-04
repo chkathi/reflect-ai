@@ -1,4 +1,8 @@
+import AddNoteModal from "@/components/AddNoteModal";
+import ExportModal from "@/components/ExportModal";
+import NoteList from "@/components/NoteList";
 import { useAuth } from "@/contexts/AuthContext";
+import noteService from "@/services/notesService";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -10,113 +14,81 @@ import {
   View,
 } from "react-native";
 
-import AddNoteModal from "@/components/AddNoteModal";
-import NoteList from "@/components/NoteList";
+import { useNote } from "@/contexts/NoteContext";
 
-import notesService from "@/services/notesService";
-
-export default function NotesScreen() {
-  const router = useRouter();
+const NoteScreen = () => {
+  const {
+    notes,
+    setNotes,
+    fetchNotes,
+    editNote,
+    deleteNote,
+    exportError,
+    exportSucess,
+    setExportError,
+    setExportSuccess,
+  } = useNote();
   const { user, loading: authLoading } = useAuth();
-
-  const [notes, setNotes] = useState([]);
+  const router = useRouter();
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [newNote, setNewNote] = useState("");
+  const [exportModalVisible, setExportModalVisible] = useState(false);
+  const [newNoteText, setNewNoteText] = useState("");
+  const [newNoteSummary, setNewNoteSummary] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!authLoading && user === null) {
+    if (!authLoading && !user) {
       router.replace("/auth");
     }
   }, [user, authLoading]);
 
   useEffect(() => {
     if (user) {
-      fetchNotes();
+      fetchNotes(user.$id, setLoading);
     }
-  }, []);
-
-  const fetchNotes = async () => {
-    setLoading(true);
-
-    const response = await notesService.getNotes(user.$id);
-
-    console.log("Fetched notes response:", response);
-
-    if (response.error) {
-      setError(response.error);
-      Alert.alert("Error");
-    } else {
-      setNotes(response.data);
-      setError(null);
-    }
-
-    setLoading(false);
-  };
+  }, [user]);
 
   const addNote = async () => {
-    console.log("Add Note: Log");
+    if (newNoteText.trim() === "") return;
 
-    if (newNote.trim() === "") return;
-
-    const response = await notesService.addNote(user.$id, newNote);
+    const response = await noteService.addNote(
+      user.$id,
+      newNoteText,
+      newNoteSummary
+    );
 
     if (response.error) {
-      Alert.alert("Error: ", response.error);
+      Alert.alert("Error", response.error);
     } else {
       setNotes([...notes, response.data]);
     }
 
-    setNewNote("");
+    setNewNoteText("");
+    setNewNoteSummary("");
     setModalVisible(false);
-  };
-
-  const deleteNote = async (id) => {
-    Alert.alert("Delete Note", "Are you sure you want to delete this note?", [
-      {
-        text: "cancel",
-        style: "cancel",
-      },
-      {
-        text: "Delete",
-        style: "destructive", // Red color for the button
-        onPress: async () => {
-          const response = await notesService.deleteNote(id);
-
-          if (response.error) {
-            Alert.alert("Error: ", response.error);
-          } else {
-            // Update notes on screen (keep notes that dont match the id)
-            setNotes(notes.filter((note) => note.$id != id));
-          }
-        },
-      },
-    ]);
-  };
-
-  const editNote = async (id, updatedText) => {
-    if (!updatedText.trim()) {
-      Alert.alert("Error", "Note text cannot be empty.");
-      return;
-    }
-    const response = await notesService.updateNote(id, updatedText);
-
-    if (response.error) {
-      Alert.alert("Error: ", response.error);
-    } else {
-      // Update notes on screen
-      setNotes((prevNotes) => {
-        prevNotes.map((note) =>
-          note.$id == id ? { ...note, text: updatedText } : note
-        );
-      });
-    }
   };
 
   return (
     <View style={styles.container}>
+      <View style={styles.actions}>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => setModalVisible(true)}
+        >
+          <Text style={styles.addButtonText}>+ Add Note</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.exportButton}
+          onPress={() => {
+            setExportModalVisible(true);
+          }}
+        >
+          <Text style={styles.addButtonText}>Export Notes</Text>
+        </TouchableOpacity>
+      </View>
+
       {loading ? (
         <ActivityIndicator size="large" color="#007bff" />
       ) : (
@@ -124,34 +96,32 @@ export default function NotesScreen() {
           {error && <Text style={styles.errorText}>{error}</Text>}
 
           {notes.length === 0 ? (
-            <Text style={styles.noNotesText}>You have no notes</Text>
+            <Text style={styles.noNotes}>You have no notes</Text>
           ) : (
-            /* Note List Component */
             <NoteList notes={notes} onDelete={deleteNote} onEdit={editNote} />
           )}
         </>
       )}
 
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => {
-          setModalVisible(true);
-        }}
-      >
-        <Text style={styles.addButtonText}> + Add Notes </Text>
-      </TouchableOpacity>
-
-      {/* Modal Component */}
       <AddNoteModal
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
-        newNote={newNote}
-        setNewNote={setNewNote}
+        newNoteText={newNoteText}
+        setNewNoteText={setNewNoteText}
+        setNewNoteSummary={setNewNoteSummary}
         addNote={addNote}
+      />
+      <ExportModal
+        exportModalVisible={exportModalVisible}
+        setExportModalVisible={setExportModalVisible}
+        setExportSucess={setExportSuccess}
+        setExportError={setExportError}
+        exportError={exportError}
+        exportSucess={exportSucess}
       />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -160,10 +130,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   addButton: {
-    position: "absolute",
-    bottom: 20,
-    left: 20,
-    right: 20,
     backgroundColor: "#007bff",
     padding: 15,
     borderRadius: 8,
@@ -174,4 +140,44 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
+  errorText: {
+    color: "red",
+    textAlign: "center",
+    marginBottom: 10,
+    fontSize: 16,
+  },
+  noNotes: {
+    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#555",
+    marginTop: 15,
+  },
+  actions: {
+    flexDirection: "row", // Arrange buttons in a row
+    justifyContent: "space-between", // Space out the buttons
+    padding: 5,
+    marginBottom: 20, // Add margin at the bottom
+    backgroundColor: "#fff", // Optional: Background color for the actions bar
+    borderBottomWidth: 1, // Optional: Add a border at the top
+    borderBottomColor: "#ccc", // Optional: Border color
+  },
+  addButton: {
+    backgroundColor: "#007bff",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+    flex: 1, // Make the button take equal space
+    marginHorizontal: 5, // Add spacing between buttons
+  },
+  exportButton: {
+    backgroundColor: "#28a745",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+    flex: 1, // Make the button take equal space
+    marginHorizontal: 5, // Add spacing between buttons
+  },
 });
+
+export default NoteScreen;
