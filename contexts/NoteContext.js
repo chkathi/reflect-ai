@@ -104,7 +104,7 @@ export const NoteProvider = ({ children }) => {
     }
   };
 
-  const filterNotesFunc = (startMonth, startYear, endMonth, endYear) => {
+  const filterNotesFunc = async (startMonth, startYear, endMonth, endYear) => {
     if (
       startMonth === 0 ||
       startYear === 0 ||
@@ -164,11 +164,13 @@ export const NoteProvider = ({ children }) => {
     setExportSuccess("Notes available for download!");
     console.log("NotesContext: Filtered notes successfully");
     console.log("Filtered Notes:", filtered);
+
+    await handleSync(filtered); // Sync filtered notes to Analysis API
   };
 
-  const handleSync = async () => {
+  const handleSync = async (filtered) => {
     try {
-      const response = await syncToAnalysisAPI(filteredNotes);
+      const response = await syncToAnalysisAPI(filtered);
       console.log("Sync successful:", response);
     } catch (err) {
       Alert.alert("Sync Error", err.message);
@@ -192,7 +194,6 @@ export const NoteProvider = ({ children }) => {
         exportSuccess,
         setExportError,
         setExportSuccess,
-        handleSync,
       }}
     >
       {children}

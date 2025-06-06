@@ -28,7 +28,6 @@ export default function ExportModal({
     exportSuccess,
     setExportSuccess,
     setExportError,
-    handleSync,
   } = useNote();
 
   return (
@@ -109,8 +108,6 @@ export default function ExportModal({
               <TouchableOpacity
                 onPress={() => {
                   filterNotesFunc(startMonth, startYear, endMonth, endYear);
-                  handleSync(); // Sync notes after filtering
-
                 }}
               >
                 <Text style={styles.export}>Export</Text>
